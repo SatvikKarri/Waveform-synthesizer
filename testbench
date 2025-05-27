@@ -1,0 +1,66 @@
+`timescale 1ns / 1ps
+
+module top_tb;
+    reg clk, rst, start, pitch_up, pitch_down;
+    reg [3:0] wave_select;
+    reg [7:0] keys;
+    wire cs, mosi, sclk, done;
+    wire [6:0] wave1_seg;
+    wire [3:0]sel;
+    // Instantiate the top module
+    top uut (
+        .clk(clk), 
+        .rst(rst), 
+        .start(start), 
+        .wave_select(wave_select), 
+        .keys(keys), 
+        .pitch_up(pitch_up), 
+        .pitch_down(pitch_down), 
+        .wave1_seg(wave1_seg),    
+        .cs(cs), 
+        .mosi(mosi), 
+        .sclk(sclk), 
+        .done(done),.sel(sel)
+    );
+
+    // Clock Generation
+    always #5 clk = ~clk; // 100MHz clock (10ns period)
+    
+    initial begin
+        // Initialize inputs
+        clk = 0;
+        rst = 1;
+        start = 0;
+        wave_select = 4'b0000;
+        keys = 8'b00000000;
+        pitch_up = 0;
+        pitch_down = 0;
+
+        // Reset sequence
+        #20 rst = 0;
+        
+        // Test case 1: Play a note with wave select 1
+        #10 wave_select = 4'b0001;
+        keys = 8'b00000001;
+        start = 1;
+        #100000000 start = 0;
+        
+        // Test case 2: Change pitch up
+        #5000 pitch_up = 1;
+        #1000 pitch_up = 0;
+        
+        // Test case 3: Change pitch down
+        #5000 pitch_down = 1;
+        #1000 pitch_down = 0;
+        
+        // Test case 4: Change waveform
+        #5000 wave_select = 4'b0010;
+        keys = 8'b00000010;
+        start = 1;
+        #100000000 start = 0;
+        
+        // Stop simulation after some time
+        #2000000000 $stop;
+    end
+
+endmodule
